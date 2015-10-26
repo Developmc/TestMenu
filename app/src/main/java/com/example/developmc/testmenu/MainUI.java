@@ -18,6 +18,8 @@ public class MainUI extends RelativeLayout {
     private FrameLayout leftMenu ;
     private FrameLayout middleMenu ;
     private FrameLayout bottomMenu ;
+    //添加蒙版
+    private FrameLayout middleMask ;
     //声明ID
     public static final int LEFT_ID=0xaabbcc;
     public static final int MIDDLE_ID=0xaaccbb;
@@ -39,10 +41,13 @@ public class MainUI extends RelativeLayout {
         mScroller = new Scroller(context,new DecelerateInterpolator()) ;
         leftMenu = new FrameLayout(context) ;
         middleMenu=new FrameLayout(context) ;
+        middleMask = new FrameLayout(context) ;
         bottomMenu = new FrameLayout(context) ;
         leftMenu.setBackgroundColor(Color.RED);
         middleMenu.setBackgroundColor(Color.GREEN);
         bottomMenu.setBackgroundColor(Color.GRAY);
+        //设置蒙版为灰色透明
+        middleMask.setBackgroundColor(0x88000000);
         leftMenu.setId(LEFT_ID);
         middleMenu.setId(MIDDLE_ID);
         bottomMenu.setId(BOTTOM_ID);
@@ -50,6 +55,18 @@ public class MainUI extends RelativeLayout {
         addView(leftMenu);
         addView(middleMenu);
         addView(bottomMenu);
+        addView(middleMask);
+        //初始化透明度(完全透明)
+        middleMask.setAlpha(0);
+    }
+
+    //根据滑动的距离来设置蒙版透明度
+    @Override
+    public void scrollTo(int x, int y) {
+        super.scrollTo(x, y);
+        int curX = Math.abs(getScrollX());
+        float scale = curX/(float)leftMenu.getMeasuredWidth();
+        middleMask.setAlpha(scale);
     }
 
     @Override
@@ -57,6 +74,8 @@ public class MainUI extends RelativeLayout {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         //先测量中间view的高度和宽度
         middleMenu.measure(widthMeasureSpec, heightMeasureSpec);
+        middleMask.measure(widthMeasureSpec,heightMeasureSpec);
+
         //获取屏幕整体的宽度
         int realWidth = MeasureSpec.getSize(widthMeasureSpec);
         int realHeight = MeasureSpec.getSize(heightMeasureSpec);
@@ -78,6 +97,7 @@ public class MainUI extends RelativeLayout {
         super.onLayout(changed, l, t, r, b);
         //把view填充进去
         middleMenu.layout(l,t,r,b);
+        middleMask.layout(l,t,r,b);
         leftMenu.layout(l-leftMenu.getMeasuredWidth(),t,r,b);
 
         bottomMenu.layout(l,t+middleMenu.getMeasuredHeight(),r,t+middleMenu.getMeasuredHeight()+bottomMenu.getMeasuredHeight());
